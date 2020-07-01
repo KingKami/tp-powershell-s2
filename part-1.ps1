@@ -34,6 +34,7 @@ function create_users() {
             }
             else {
                 Disable-ADAccount -Identity $username -SearchBase $path
+                Remove-LocalGroupMember -Group "Administrators" -Member $username
             }
         }
         else {
@@ -54,12 +55,9 @@ function create_users() {
             -SamAccountName $username
             -Surname $user.surname
             -TrustedForDelegation $false
+            Add-LocalGroupMember -Group "Administrators" -Member $username
         }
     }
-}
-
-function get_all_computers() {
-    $computers = Get-ADComputer -Filter * -Property * | Export-CSV ADcomputerslist.csv -NoTypeInformation -Encoding UTF8
 }
 
 function main() {
