@@ -1,4 +1,3 @@
-
 function getNetworkAdapterSpeed([string]$type) {
     $NetworkAdapterSpeed = Get-WmiObject Win32_NetworkAdapter -ComputerName "localhost" |`
     Where-Object {$_.Name -match $type -and $_.Name -notmatch 'virtual' -and $null -ne $_.Speed -and $null -ne $_.MACAddress} |`
@@ -10,8 +9,7 @@ function getNetworkAdapterSpeed([string]$type) {
         return "no ${type} adapter found"
     }
 }
-
-function get_computer_info(){
+function get_computer_info([string]$SharedFolderPath){
     $server = "localhost"
     $infoObject = New-Object PSObject
     $CPUInfo = Get-WmiObject Win32_Processor -ComputerName $server
@@ -34,24 +32,23 @@ function get_computer_info(){
     Add-Member -inputObject $infoObject -MemberType NoteProperty -name "EthernetAdapterSpeedGB" -Value $EthernetAdapterSpeed
     Add-Member -inputObject $infoObject -MemberType NoteProperty -name "Username" -Value $env:UserName
     Add-Member -inputObject $infoObject -MemberType NoteProperty -name "InventoryTime" -Value $DateTime
-    $infoObject | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Set-Content -Path "${SystemName}.csv" -Encoding UTF8
+    $infoObject | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Set-Content -Path "${SharedFolderPath}${SystemName}.csv" -Encoding UTF8
 }
-
-function fuse_to_inventory(){
+function fuse_to_inventory([string]$SharedFolderPath){
     $header = '"ServerName","Processor","PhysicalCores","LogicalCores","OSName","OSVersion","TotalPhysicalMemoryGB","TotalDiskSizeGB","WirelessAdapterSpeedGB","EthernetAdapterSpeedGB","Username","InventoryTime"'
-    Get-ChildItem | Where-Object {$_.Name -match ".csv"}
+    Set-Content -Path "${SharedFolderPath}inventory.csv" -Value $header -Encoding UTF8
+    Get-ChildItem -File -Path "${SharedFolderPath}*" -Include *.csv -Exclude *inventory.csv* | Foreach-Object {
+        $content = Get-Content $_.FullName
+        Add-Content -Path "${SharedFolderPath}inventory.csv" -Value $content -Encoding UTF8
+    }
 }
-
-
 function main() {
-    
+    $SharedFolderPath = "D:\Karthike\cours\powershell\tp-powershell-s2\part2\"
     do {
         Clear-Host
-        Write-Host "1) get computer specs"
-        Write-Host "2) fuse to inventory"
-        Write-Host "Enter 1 or 2:" -ForegroundColor Yellow -NoNewline
+        Write-Host "1) Get Computer Specs`n2) Fuse To Inventory"
+        Write-Host "Enter 1 or 2: " -ForegroundColor Yellow -NoNewline
         $choice = Read-Host
-        
         if ($choice -eq 1 -or $choice -eq 2) {
             $ok = $true
         }
@@ -59,12 +56,9 @@ function main() {
             $ok = $false
         }
     } while ($ok -eq $false)
-    
-    
     switch ($choice) {
-        1 { get_computer_info }
-        2 { fuse_to_inventory }
+        1 { get_computer_info $SharedFolderPath}
+        2 { fuse_to_inventory $SharedFolderPath}
     }
 }
-
 main
