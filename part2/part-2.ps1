@@ -20,7 +20,7 @@ function get_computer_info([string]$SharedFolderPath){
     $WirelessAdapterSpeed = getNetworkAdapterSpeed("wireless")
     $EthernetAdapterSpeed = getNetworkAdapterSpeed("ethernet")
     $DateTime = Get-Date -UFormat "%Y/%m/%d %T"
-    Add-Member -inputObject $infoObject -memberType NoteProperty -name "ServerName" -value $SystemName
+    Add-Member -inputObject $infoObject -memberType NoteProperty -name "SystemName" -value $SystemName
     Add-Member -inputObject $infoObject -memberType NoteProperty -name "Processor" -value $CPUInfo.Name
     Add-Member -inputObject $infoObject -memberType NoteProperty -name "PhysicalCores" -value $CPUInfo.NumberOfCores
     Add-Member -inputObject $infoObject -memberType NoteProperty -name "LogicalCores" -value $CPUInfo.NumberOfLogicalProcessors
@@ -35,7 +35,7 @@ function get_computer_info([string]$SharedFolderPath){
     $infoObject | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Set-Content -Path "${SharedFolderPath}${SystemName}.csv" -Encoding UTF8
 }
 function fuse_to_inventory([string]$SharedFolderPath){
-    $header = '"ServerName","Processor","PhysicalCores","LogicalCores","OSName","OSVersion","TotalPhysicalMemoryGB","TotalDiskSizeGB","WirelessAdapterSpeedGB","EthernetAdapterSpeedGB","Username","InventoryTime"'
+    $header = '"SystemName","Processor","PhysicalCores","LogicalCores","OSName","OSVersion","TotalPhysicalMemoryGB","TotalDiskSizeGB","WirelessAdapterSpeedGB","EthernetAdapterSpeedGB","Username","InventoryTime"'
     Set-Content -Path "${SharedFolderPath}inventory.csv" -Value $header -Encoding UTF8
     Get-ChildItem -File -Path "${SharedFolderPath}*" -Include *.csv -Exclude *inventory.csv* | Foreach-Object {
         $content = Get-Content $_.FullName
