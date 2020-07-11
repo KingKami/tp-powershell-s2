@@ -2,6 +2,7 @@
     $list = Import-Csv $file -Delimiter ${delimiter}
     return $list
 }
+
 function get_eligible_computers([string]$SharedFolderPath) {
     $ComputersList = import_csv("..\part2\inventory.csv") 
     $header = Get-Content "..\part2\inventory.csv" | Select-Object -First 1
@@ -26,14 +27,17 @@ function get_eligible_computers([string]$SharedFolderPath) {
         }
         if ($memory -ge 12 -and $processor_generation -ge 6 -and $disk_size -ge 500 -and ($ethernet_adapter_speed -ge 1 -or $wireless_adapter_speed -ge 1 )) {
             $readyToMigrate += $Computer
-            # Add-Content -Path "${SharedFolderPath}readyToMigrate.csv" -Value $Computer -Encoding UTF8
         }else {
             $computer_to_buy += 1
         }
     }
     $readyToMigrate | Export-Csv -NoTypeInformation -Path "${SharedFolderPath}readyToMigrate.csv" -Encoding UTF8
-    Set-Content -Path ${SharedFolderPath}computerToBuy.txt -Value "computers to buy: ${computer_to_buy}"
+    Set-Content -Path ${SharedFolderPath}computerToBuy.txt -Value "$DateTime : computers to buy: ${computer_to_buy}"
+    $work_todo = (($ComputersList | Measure-Object).Count - (import_csv("done.csv") | Measure-Object).Count)
+    $DateTime = Get-Date -UFormat "%Y/%m/%d %T"
+    Add-Content -path ${SharedFolderPath}workdone.txt -Value "$DateTime : $work_todo computers left to migrate"
 }
+
 function main() {
     $SharedFolderPath = "D:\Karthike\cours\powershell\tp-powershell-s2\part3\"
     get_eligible_computers $SharedFolderPath

@@ -9,6 +9,7 @@ function getNetworkAdapterSpeed([string]$type) {
         return "no ${type} adapter found"
     }
 }
+
 function get_computer_info([string]$SharedFolderPath){
     $server = "localhost"
     $infoObject = New-Object PSObject
@@ -34,6 +35,7 @@ function get_computer_info([string]$SharedFolderPath){
     Add-Member -inputObject $infoObject -MemberType NoteProperty -name "InventoryTime" -Value $DateTime
     $infoObject | ConvertTo-Csv -NoTypeInformation | Select-Object -Skip 1 | Set-Content -Path "${SharedFolderPath}${SystemName}.csv" -Encoding UTF8
 }
+
 function fuse_to_inventory([string]$SharedFolderPath){
     $header = '"SystemName","Processor","PhysicalCores","LogicalCores","OSName","OSVersion","TotalPhysicalMemoryGB","TotalDiskSizeGB","WirelessAdapterSpeedGB","EthernetAdapterSpeedGB","Username","InventoryTime"'
     Set-Content -Path "${SharedFolderPath}inventory.csv" -Value $header -Encoding UTF8
@@ -42,6 +44,7 @@ function fuse_to_inventory([string]$SharedFolderPath){
         Add-Content -Path "${SharedFolderPath}inventory.csv" -Value $content -Encoding UTF8
     }
 }
+
 function main() {
     $SharedFolderPath = "D:\Karthike\cours\powershell\tp-powershell-s2\part2\"
     do {
@@ -61,4 +64,5 @@ function main() {
         2 { fuse_to_inventory $SharedFolderPath}
     }
 }
+
 main
