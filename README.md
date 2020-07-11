@@ -1,4 +1,4 @@
-# tp-powershell-s2
+# TP Powershell
 
 ## Authors
 - DA SILVA OLIVEIRA PHILIPPE 4SRC2
