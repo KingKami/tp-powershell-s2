@@ -17,7 +17,7 @@
 - Fill up the `part1\user-list.csv`
 - Run `part1\part-1.ps1`
     - Choose 1 to create users
-    - Choose 2 to deleted expired users
+    - Choose 2 to delete expired users
 
 ## Part 2
 
