@@ -3,9 +3,9 @@ function import_csv([string]$file) {
     return $list
 }
 
-function test_aduser([string]$username, [string]$path) {
+function test_aduser([string]$username) {
     Try {
-        Get-ADuser -Identity $username -SearchBase $path -ErrorAction Stop
+        Get-ADuser -Identity $username -ErrorAction Stop
         return $true
     }
     Catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
@@ -13,56 +13,86 @@ function test_aduser([string]$username, [string]$path) {
     }
 }
 
-function delete_users() {
-    $timespan = New-Timespan –Days 30
-    Search-ADAccount -AccountInactive -Timespan $timespan | Where-Object { $_.ObjectClass -eq 'user' } | Remove-ADUser
-}
-
-function create_users() {
-    $list = import_csv(".\user-list.csv")
-    $expiry_date = "09/01/2020"
-
+function create_users([Object[]]$list) {
     foreach ($user in $list) {
-
-        $password = $user.name + "." + $user.surname + "@" + $user.company
-        $username = "${user.name}.${user.surname}"
-        $path = "OU=Users,OU=${user.departement},OU=${user.company},DC=ESGI-SRC,DC=fr"
-
+        $password = $user.name[0] + "." + $user.surname[0] + "@" + $user.company + (get-date -Format "MM")
+        $username = $user.name+"."+$user.surname
+        $initials = $user.name[0] + $user.surname[0]
+        $name = $user.name
+        $surname = $user.surname
+        $displayname = $user.name + " " + $user.surname
+        $company = $user.company
+        $department = $user.department
+        $expiry_date = $user.contract_end
+        $path = "OU=Users,OU=${department},OU=${company},DC=ESGI-SRC,DC=fr"
+        if ($user.ispresent -eq 1){
+            $isenabled = $True
+        } else {
+            $isenabled = $False
+        }
         if (test_aduser($username)) {
-            if (user.ispresent) {
+            if ($isenabled) {
+                Get-ADuser -Identity $username | Enable-ADAccount 
                 write-host "user exists no action required"
             }
             else {
-                Disable-ADAccount -Identity $username -SearchBase $path
-                Remove-LocalGroupMember -Group "Administrators" -Member $username
+                Get-ADuser -Identity $username | Disable-ADAccount 
+                write-host "${username} has been disabled"
             }
         }
-        else {
-            New-ADUser
-            -AccountExpirationDate $expiry_date
-            -AccountPassword (ConvertTo-SecureString -AsPlainText $password -Force)
-            -ChangePasswordAtLogon $true
-            -Company $user.company
-            -Department $user.departement
-            -DisplayName "${user.name} ${user.surname}"
-            -EmailAddress $user.mail
-            -Enabled $user.ispresent
-            -Initials $user.name[0] + $user.surname[0]
-            -Name $user.name
-            -PasswordNeverExpires $false
-            -PasswordNotRequired $false
-            -Path $path
-            -SamAccountName $username
-            -Surname $user.surname
-            -TrustedForDelegation $false
-            Add-LocalGroupMember -Group "Administrators" -Member $username
+        else{
+            if ($isenabled) {
+                New-ADUser `
+                -AccountExpirationDate $expiry_date `
+                -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) `
+                -ChangePasswordAtLogon $true `
+                -Company $company `
+                -Department $department `
+                -DisplayName $displayname `
+                -Enabled $isenabled `
+                -Initials $initials `
+                -Name $name `
+                -SamAccountName $username `
+                -Surname $surname `
+                -GivenName $surname `
+                -Path $path
+                Add-ADGroupMember -Identity "Administrateur local" -Members $username
+                write-host "${username} has been created"
+            }else{
+                write-host "no action required ${username} is not present"
+            }
         }
     }
 }
 
+function remove_inactive_account([Object[]]$list){
+    $then = (Get-Date).AddDays(-30)
+    foreach ($user in $list){
+        $username = $user.name + "." + $user.surname
+        $expired = Search-ADAccount -AccountExpired | where {$_.enabled -eq $False -and $_.SamAccountName -eq $username -and $_.AccountExpirationDate -lt $then}
+        write-host "removing ${username}"
+        $expired | Remove-ADUser
+    }
+}
+
 function main() {
-    create_users
-    delete_users
+    $list = import_csv(".\user-list.csv")
+    do {
+        Clear-Host
+        Write-Host "1) Create users from csv`n2) Delete expired users"
+        Write-Host "Enter 1 or 2: " -ForegroundColor Yellow -NoNewline
+        $choice = Read-Host
+        if ($choice -eq 1 -or $choice -eq 2) {
+            $ok = $true
+        }
+        else {
+            $ok = $false
+        }
+    } while ($ok -eq $false)
+    switch ($choice) {
+        1 { create_users $list}
+        2 { remove_inactive_account $list}
+    }
 }
 
 main
