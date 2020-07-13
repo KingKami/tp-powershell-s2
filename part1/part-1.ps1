@@ -39,8 +39,7 @@ function create_users([Object[]]$list) {
                 Get-ADuser -Identity $username | Disable-ADAccount 
                 write-host "${username} has been disabled"
             }
-        }
-        else{
+        } else {
             if ($isenabled) {
                 New-ADUser `
                 -AccountExpirationDate $expiry_date `
@@ -58,7 +57,7 @@ function create_users([Object[]]$list) {
                 -Path $path
                 Add-ADGroupMember -Identity "Administrateur local" -Members $username
                 write-host "${username} has been created"
-            }else{
+            } else {
                 write-host "no action required ${username} is not present"
             }
         }
@@ -69,7 +68,7 @@ function remove_inactive_account([Object[]]$list){
     $then = (Get-Date).AddDays(-30)
     foreach ($user in $list){
         $username = $user.name + "." + $user.surname
-        $expired = Search-ADAccount -AccountExpired | where {$_.enabled -eq $False -and $_.SamAccountName -eq $username -and $_.AccountExpirationDate -lt $then}
+        $expired = Search-ADAccount -AccountExpired | Where-Object {$_.enabled -eq $False -and $_.SamAccountName -eq $username -and $_.AccountExpirationDate -lt $then}
         write-host "removing ${username}"
         $expired | Remove-ADUser
     }
@@ -84,8 +83,7 @@ function main() {
         $choice = Read-Host
         if ($choice -eq 1 -or $choice -eq 2) {
             $ok = $true
-        }
-        else {
+        } else {
             $ok = $false
         }
     } while ($ok -eq $false)
