@@ -69,7 +69,9 @@ function remove_inactive_account([Object[]]$list){
     foreach ($user in $list){
         $username = $user.name + "." + $user.surname
         $expired = Search-ADAccount -AccountExpired | Where-Object {$_.enabled -eq $False -and $_.SamAccountName -eq $username -and $_.AccountExpirationDate -lt $then}
-        write-host "removing ${username}"
+        foreach($user in $expired) {
+            write-host "removing ${username}"
+        }
         $expired | Remove-ADUser
     }
 }

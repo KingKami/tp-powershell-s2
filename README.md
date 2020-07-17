@@ -17,6 +17,8 @@
 - Fill up the `part1\user-list.csv`
 - Run `part1\part-1.ps1`
     - Choose 1 to create users
+        - :warning: You must have a global security group named `Administrateur local` for the script to run the group name can be changed by editing line 58
+        - :warning: You must have the following path in your active directory `OU=Users,OU=migration,OU=PRESTA10,DC=ESGI-SRC,DC=fr` the path can be changed by editing line 27
     - Choose 2 to delete expired users
 
 ## Part 2

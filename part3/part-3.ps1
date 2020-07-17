@@ -31,10 +31,10 @@ function get_eligible_computers([string]$SharedFolderPath) {
             $computer_to_buy += 1
         }
     }
+    $DateTime = Get-Date -UFormat "%Y/%m/%d %T"
     $readyToMigrate | Export-Csv -NoTypeInformation -Path "${SharedFolderPath}readyToMigrate.csv" -Encoding UTF8
     Set-Content -Path ${SharedFolderPath}computerToBuy.txt -Value "$DateTime : computers to buy: ${computer_to_buy}"
     $work_todo = (($ComputersList | Measure-Object).Count - (import_csv("done.csv") | Measure-Object).Count)
-    $DateTime = Get-Date -UFormat "%Y/%m/%d %T"
     Add-Content -path ${SharedFolderPath}workdone.txt -Value "$DateTime : $work_todo computers left to migrate"
 }
 

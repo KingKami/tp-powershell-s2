@@ -1,0 +1,5 @@
+2020/07/11 13:21:36 : 28 computers left to migrate
+2020/07/11 13:21:45 : 28 computers left to migrate
+2020/07/17 12:48:06 : 28 computers left to migrate
+2020/07/17 12:49:17 : 25 computers left to migrate
+2020/07/17 12:57:59 : 25 computers left to migrate

@@ -1,1 +1,3 @@
 company,department,ispresent,name,surname,contract_end
+"PRESTA10","migration",0,"toto","titi","08/31/2020"
+"PRESTA10","migration",1,"tata","tutu","08/31/2020"
